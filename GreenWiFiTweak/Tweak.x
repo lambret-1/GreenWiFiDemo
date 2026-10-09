@@ -28,7 +28,7 @@ UIImage* loadGreenWiFi() {
     if(g_tunnelActive) {
         UIImage *img = loadGreenWiFi();
         if(img) {
-            self.image = img;
+            [(id)self setValue:img forKey:@"image"];
         }
     }
 }
