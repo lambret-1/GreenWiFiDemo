@@ -10,7 +10,7 @@ struct ContentView: View {
                 .font(.title2)
                 .bold()
 
-            Text("通过AppGroup共享标记，由Tweak绘制状态栏图标")
+            Text("通过共享路径标记，由Tweak绘制状态栏图标")
                 .font(.caption)
                 .foregroundColor(.gray)
 
@@ -74,7 +74,7 @@ struct ContentView: View {
             .cornerRadius(8)
             .padding(.horizontal)
 
-            Text("共享路径: /tmp/com.demo.greenwifi.state.plist")
+            Text("共享路径: /var/mobile/Library/Application Support/com.demo.greenwifi/state.plist")
                 .font(.system(.caption2, design: .monospaced))
                 .foregroundColor(.gray)
         }

@@ -5,8 +5,9 @@ class TunnelStateManager: ObservableObject {
     static let shared = TunnelStateManager()
     private init() {}
 
-    /// 越狱设备全局共享路径，/tmp所有进程可读写，TrollStore App与SpringBoard均无障碍
-    private let sharedPath = "/tmp/com.demo.greenwifi.state.plist"
+    /// 越狱设备共享路径：/var/mobile下不会被沙盒重映射，App与SpringBoard指向同一文件
+    private let sharedDir = "/var/mobile/Library/Application Support/com.demo.greenwifi"
+    private var sharedPath: String { sharedDir + "/state.plist" }
 
     @Published var logs: [String] = []
 
@@ -20,8 +21,24 @@ class TunnelStateManager: ObservableObject {
         print(msg)
     }
 
+    /// 确保共享目录存在
+    private func ensureDirectory() -> Bool {
+        let fileManager = FileManager.default
+        if !fileManager.fileExists(atPath: sharedDir) {
+            do {
+                try fileManager.createDirectory(atPath: sharedDir, withIntermediateDirectories: true)
+                log("📁 已创建共享目录: \(sharedDir)")
+            } catch {
+                log("❌ 创建目录失败: \(error.localizedDescription)")
+                return false
+            }
+        }
+        return true
+    }
+
     /// 写入隧道状态（供Tweak读取）
     func setTunnelActive(_ active: Bool) {
+        guard ensureDirectory() else { return }
         let dict: [String: Bool] = ["tunnelActive": active]
         let url = URL(fileURLWithPath: sharedPath)
         do {
