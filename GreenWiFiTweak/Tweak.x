@@ -2,7 +2,7 @@
 #import <UIKit/UIKit.h>
 
 static BOOL g_tunnelActive = NO;
-static NSString* plistPath = @"/var/mobile/Library/Application Support/com.demo.greenwifi/state.plist";
+static NSString* plistPath = @"/var/jb/tmp/com.demo.greenwifi.state.plist";
 static UIImage* greenWifiImage = nil;
 
 // 读取共享路径标记（越狱环境，无需entitlement）
