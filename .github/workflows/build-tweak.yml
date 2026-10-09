@@ -1,0 +1,34 @@
+name: 构建GreenWiFiTweak DEB包
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'GreenWiFiTweak/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装Theos
+        run: |
+          brew install ldid xz
+          git clone --recursive https://github.com/theos/theos.git $HOME/theos
+          echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+
+      - name: 构建Tweak
+        working-directory: ./GreenWiFiTweak
+        run: |
+          export THEOS=$HOME/theos
+          make clean
+          make package THEOS_PACKAGE_SCHEME=rootless
+
+      - name: 上传DEB产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: GreenWiFiTweak-deb
+          path: GreenWiFiTweak/packages/*.deb
+          retention-days: 30

@@ -1,0 +1,9 @@
+Package: com.demo.greenwifitweak
+Name: GreenWiFiTweak
+Version: 1.0.0
+Architecture: iphoneos-arm64
+Description: Dopamine rootless状态栏绿色WiFi图标，读取AppGroup共享标记
+Maintainer: Demo
+Author: Demo
+Section: Tweaks
+Depends: mobilesubstrate, preferenceloader

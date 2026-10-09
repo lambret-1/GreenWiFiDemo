@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var helper = StatusBarHelper.shared
+    @StateObject private var stateManager = TunnelStateManager.shared
     @State private var isGreenWiFiOn = false
 
     var body: some View {
@@ -10,12 +10,16 @@ struct ContentView: View {
                 .font(.title2)
                 .bold()
 
+            Text("通过AppGroup共享标记，由Tweak绘制状态栏图标")
+                .font(.caption)
+                .foregroundColor(.gray)
+
             HStack(spacing: 12) {
                 Button(isGreenWiFiOn ? "关闭绿色WiFi" : "开启绿色WiFi") {
                     if isGreenWiFiOn {
-                        helper.resetWiFiIcon()
+                        stateManager.setTunnelActive(false)
                     } else {
-                        helper.setGreenWiFi()
+                        stateManager.setTunnelActive(true)
                     }
                     isGreenWiFiOn.toggle()
                 }
@@ -24,8 +28,16 @@ struct ContentView: View {
                 .foregroundColor(.white)
                 .cornerRadius(8)
 
+                Button("读取状态") {
+                    _ = stateManager.readTunnelActive()
+                }
+                .padding()
+                .background(.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
+
                 Button("清空日志") {
-                    helper.clearLogs()
+                    stateManager.clearLogs()
                 }
                 .padding()
                 .background(.gray)
@@ -42,12 +54,12 @@ struct ContentView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 4) {
-                    if helper.logs.isEmpty {
+                    if stateManager.logs.isEmpty {
                         Text("暂无日志，点击上方按钮开始测试")
                             .foregroundColor(.gray)
                             .font(.caption)
                     } else {
-                        ForEach(Array(helper.logs.enumerated()), id: \.offset) { _, line in
+                        ForEach(Array(stateManager.logs.enumerated()), id: \.offset) { _, line in
                             Text(line)
                                 .font(.system(.caption, design: .monospaced))
                                 .foregroundColor(line.contains("❌") ? .red : (line.contains("✅") ? .green : .primary))
@@ -61,6 +73,10 @@ struct ContentView: View {
             .background(Color(.systemGray6))
             .cornerRadius(8)
             .padding(.horizontal)
+
+            Text("AppGroup: group.com.demo.greenwifi")
+                .font(.system(.caption2, design: .monospaced))
+                .foregroundColor(.gray)
         }
         .padding()
     }
