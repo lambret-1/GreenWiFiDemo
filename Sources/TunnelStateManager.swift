@@ -5,8 +5,8 @@ class TunnelStateManager: ObservableObject {
     static let shared = TunnelStateManager()
     private init() {}
 
-    /// 越狱设备共享路径，App与SpringBoard均可读写
-    private let sharedPath = "/var/mobile/Library/Preferences/com.demo.greenwifi.state.plist"
+    /// 越狱设备全局共享路径，/tmp所有进程可读写，TrollStore App与SpringBoard均无障碍
+    private let sharedPath = "/tmp/com.demo.greenwifi.state.plist"
 
     @Published var logs: [String] = []
 
