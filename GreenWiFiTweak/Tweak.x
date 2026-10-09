@@ -81,7 +81,6 @@ static void forceRefreshStatusBar() {
                 }
             }
         }
-        if(!keyWindow) keyWindow = [UIApplication sharedApplication].keyWindow;
         if(keyWindow) {
             applyGreenWiFiToView(keyWindow);
         }
