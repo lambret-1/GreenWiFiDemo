@@ -7,8 +7,10 @@ class TunnelStateManager: ObservableObject {
 
     /// rootless全局可写路径，no-sandbox后App可直接写入，SpringBoard/Tweak可读
     private let sharedPath = "/var/jb/tmp/com.demo.greenwifi.state.plist"
+    private let tweakLogPath = "/var/jb/tmp/greenwifi_tweak.log"
 
     @Published var logs: [String] = []
+    @Published var tweakLogs: [String] = []
 
     private func log(_ msg: String) {
         DispatchQueue.main.async {
@@ -48,5 +50,19 @@ class TunnelStateManager: ObservableObject {
 
     func clearLogs() {
         logs.removeAll()
+    }
+
+    /// 读取Tweak侧日志文件
+    func readTweakLog() {
+        let url = URL(fileURLWithPath: tweakLogPath)
+        guard let content = try? String(contentsOf: url, encoding: .utf8) else {
+            tweakLogs = ["⚠️ Tweak日志文件不存在，Tweak可能未加载或未安装"]
+            return
+        }
+        tweakLogs = content.components(separatedBy: .newlines).filter { !$0.isEmpty }
+    }
+
+    func clearTweakLogs() {
+        tweakLogs.removeAll()
     }
 }
