@@ -74,7 +74,7 @@ struct ContentView: View {
             .cornerRadius(8)
             .padding(.horizontal)
 
-            Text("AppGroup: group.com.demo.greenwifi")
+            Text("共享路径: /var/mobile/Library/Preferences/com.demo.greenwifi.state.plist")
                 .font(.system(.caption2, design: .monospaced))
                 .foregroundColor(.gray)
         }

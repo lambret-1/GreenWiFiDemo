@@ -1,12 +1,12 @@
 import Foundation
 
-/// 隧道状态管理器：通过AppGroup共享plist与Tweak通信
+/// 隧道状态管理器：通过固定共享路径plist与Tweak通信（越狱环境，无需entitlement）
 class TunnelStateManager: ObservableObject {
     static let shared = TunnelStateManager()
     private init() {}
 
-    private let groupID = "group.com.demo.greenwifi"
-    private let fileName = "tunnelState.plist"
+    /// 越狱设备共享路径，App与SpringBoard均可读写
+    private let sharedPath = "/var/mobile/Library/Preferences/com.demo.greenwifi.state.plist"
 
     @Published var logs: [String] = []
 
@@ -20,23 +20,14 @@ class TunnelStateManager: ObservableObject {
         print(msg)
     }
 
-    /// 获取AppGroup共享目录路径
-    private func sharedPlistURL() -> URL? {
-        guard let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID) else {
-            log("❌ AppGroup获取失败，请确认已开启App Groups能力并勾选 \(groupID)")
-            return nil
-        }
-        return groupURL.appendingPathComponent(fileName)
-    }
-
     /// 写入隧道状态（供Tweak读取）
     func setTunnelActive(_ active: Bool) {
-        guard let plistURL = sharedPlistURL() else { return }
         let dict: [String: Bool] = ["tunnelActive": active]
+        let url = URL(fileURLWithPath: sharedPath)
         do {
             let data = try PropertyListSerialization.data(fromPropertyList: dict, format: .xml, options: 0)
-            try data.write(to: plistURL)
-            log("✅ 已写入 tunnelActive=\(active) 到 \(plistURL.path)")
+            try data.write(to: url)
+            log("✅ 已写入 tunnelActive=\(active) 到 \(sharedPath)")
         } catch {
             log("❌ 写入失败: \(error.localizedDescription)")
         }
@@ -44,10 +35,10 @@ class TunnelStateManager: ObservableObject {
 
     /// 读取当前共享状态（用于界面回显）
     func readTunnelActive() -> Bool {
-        guard let plistURL = sharedPlistURL() else { return false }
-        guard let data = try? Data(contentsOf: plistURL),
+        let url = URL(fileURLWithPath: sharedPath)
+        guard let data = try? Data(contentsOf: url),
               let dict = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Bool] else {
-            log("⚠️ 读取状态文件为空或不存在")
+            log("⚠️ 状态文件为空或不存在: \(sharedPath)")
             return false
         }
         let active = dict["tunnelActive"] ?? false

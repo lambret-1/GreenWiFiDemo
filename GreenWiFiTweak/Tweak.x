@@ -2,16 +2,11 @@
 #import <UIKit/UIKit.h>
 
 static BOOL g_tunnelActive = NO;
-static NSString* appGroupID = @"group.com.demo.greenwifi";
-static NSString* plistPath = nil;
+static NSString* plistPath = @"/var/mobile/Library/Preferences/com.demo.greenwifi.state.plist";
 static UIImage* greenWifiImage = nil;
 
-// 读取AppGroup共享标记
+// 读取共享路径标记（越狱环境，无需entitlement）
 BOOL readTunnelFlag() {
-    if(!plistPath) {
-        NSURL *groupUrl = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:appGroupID];
-        plistPath = [[groupUrl path] stringByAppendingPathComponent:@"tunnelState.plist"];
-    }
     NSDictionary *stateDict = [NSDictionary dictionaryWithContentsOfFile:plistPath];
     return [stateDict[@"tunnelActive"] boolValue];
 }
