@@ -7,7 +7,19 @@ class StatusBarHelper {
     private init() {}
 
     private func getSpringBoardClass() -> AnyClass? {
-        return objc_getClass("SBStatusBarDataManager")
+        return objc_getClass("SBStatusBarDataManager") as? AnyClass
+    }
+
+    /// 通过IMP直接调用多参数OC类方法，规避Swift performSelector多参数限制
+    private func callClassMethod(_ cls: AnyClass, _ sel: Selector, _ arg1: Any?, _ arg2: Any?) {
+        guard let method = class_getClassMethod(cls, sel),
+              let imp = method_getImplementation(method) else {
+            print("❌ 方法实现获取失败: \(sel)")
+            return
+        }
+        typealias Function = @convention(c) (AnyClass, Selector, Any?, Any?) -> Unmanaged<AnyObject>?
+        let function = unsafeBitCast(imp, to: Function.self)
+        _ = function(cls, sel, arg1, arg2)
     }
 
     func setGreenWiFi() {
@@ -16,7 +28,7 @@ class StatusBarHelper {
             return
         }
         let sel = NSSelectorFromString("setStatusBarImage:forIdentifier:")
-        guard cls.responds(to: sel) else {
+        guard class_getClassMethod(cls, sel) != nil else {
             print("❌ setStatusBarImage 方法不存在")
             return
         }
@@ -24,14 +36,14 @@ class StatusBarHelper {
             print("❌ 图片缺失，请检查Assets内greenWifi")
             return
         }
-        _ = cls.perform(sel, with: img, with: "wifi")
+        callClassMethod(cls, sel, img, "wifi")
         print("✅ 已调用setStatusBarImage")
     }
 
     func resetWiFiIcon() {
         guard let cls = getSpringBoardClass() else { return }
         let sel = NSSelectorFromString("setStatusBarImage:forIdentifier:")
-        _ = cls.perform(sel, with: nil, with: "wifi")
+        callClassMethod(cls, sel, nil, "wifi")
         print("✅ WiFi图标恢复原生")
     }
 }
