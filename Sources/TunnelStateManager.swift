@@ -1,11 +1,11 @@
 import Foundation
 
-/// 隧道状态管理器：通过rootless全局共享路径与Tweak通信
+/// 隧道状态管理器：no-sandbox权限下直接读写共享文件，与Tweak通信
 class TunnelStateManager: ObservableObject {
     static let shared = TunnelStateManager()
     private init() {}
 
-    /// Dopamine rootless全局可写路径，App与SpringBoard指向同一物理文件，不被沙盒重映射
+    /// rootless全局可写路径，no-sandbox后App可直接写入，SpringBoard/Tweak可读
     private let sharedPath = "/var/jb/tmp/com.demo.greenwifi.state.plist"
 
     @Published var logs: [String] = []
@@ -33,7 +33,7 @@ class TunnelStateManager: ObservableObject {
         }
     }
 
-    /// 读取当前共享状态（用于界面回显）
+    /// 读取当前共享状态
     func readTunnelActive() -> Bool {
         let url = URL(fileURLWithPath: sharedPath)
         guard let data = try? Data(contentsOf: url),

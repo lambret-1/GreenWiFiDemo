@@ -10,7 +10,7 @@ struct ContentView: View {
                 .font(.title2)
                 .bold()
 
-            Text("通过共享路径标记，由Tweak绘制状态栏图标")
+            Text("no-sandbox权限 + 共享文件，由Tweak绘制状态栏图标")
                 .font(.caption)
                 .foregroundColor(.gray)
 

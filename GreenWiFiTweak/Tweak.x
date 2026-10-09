@@ -1,62 +1,36 @@
 #import <substrate.h>
 #import <UIKit/UIKit.h>
+#import <rootless.h>
 
 static BOOL g_tunnelActive = NO;
 static NSString* plistPath = @"/var/jb/tmp/com.demo.greenwifi.state.plist";
 static UIImage* greenWifiImage = nil;
 
-// 读取共享路径标记（越狱环境，无需entitlement）
+// 读取共享文件标记
 BOOL readTunnelFlag() {
     NSDictionary *stateDict = [NSDictionary dictionaryWithContentsOfFile:plistPath];
+    if(!stateDict) return NO;
     return [stateDict[@"tunnelActive"] boolValue];
 }
 
-// 加载绿色WiFi图片
+// 加载绿色WiFi图标（rootless路径自动适配）
 UIImage* loadGreenWiFi() {
     if(greenWifiImage) return greenWifiImage;
-    NSBundle *tweakBundle = [NSBundle bundleWithPath:@"/var/jb/Library/Bundles/GreenWiFiTweak.bundle"];
+    NSBundle *tweakBundle = [NSBundle bundleWithPath:ROOT_PATH_NS(@"/Library/Bundles/GreenWiFiTweak.bundle")];
     greenWifiImage = [UIImage imageNamed:@"greenWifi" inBundle:tweakBundle compatibleWithTraitCollection:nil];
     return greenWifiImage;
 }
 
-// 方案1: 钩子 SBStatusBarDataManager
-%hook SBStatusBarDataManager
-- (void)updateActivationState {
-    %orig;
-    BOOL active = readTunnelFlag();
-    if(active && g_tunnelActive != active) {
-        g_tunnelActive = active;
-    }
-}
-%end
-
-// 方案2: 钩子 _UIStatusBarWifiItemView (iOS16+)
-%hook _UIStatusBarWifiItemView
-- (void)updateForNewData:(id)arg1 actions:(id)arg2 {
-    %orig;
-    BOOL active = readTunnelFlag();
-    if(active) {
-        UIImage *img = loadGreenWiFi();
-        if(img) {
-            [(id)self setImage:img];
-        }
-    }
-    g_tunnelActive = active;
-}
-%end
-
-// 方案3: 钩子 SBStatusBarWiFiItemView
+// 钩子状态栏WiFi图标视图
 %hook SBStatusBarWiFiItemView
 - (void)updateVisualState {
     %orig;
-    BOOL active = readTunnelFlag();
-    if(active) {
+    if(g_tunnelActive) {
         UIImage *img = loadGreenWiFi();
         if(img) {
-            [(id)self setValue:img forKey:@"image"];
+            self.image = img;
         }
     }
-    g_tunnelActive = active;
 }
 %end
 
@@ -69,9 +43,7 @@ UIImage* loadGreenWiFi() {
                 if(newVal != g_tunnelActive) {
                     g_tunnelActive = newVal;
                     dispatch_async(dispatch_get_main_queue(),^{
-                        // 触发状态栏刷新
-                        [[NSNotificationCenter defaultCenter] postNotificationName:@"SBStatusBarTimeChanged" object:nil];
-                        [[NSNotificationCenter defaultCenter] postNotificationName:@"_UIStatusBarWillBeginUpdate" object:nil];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:@"SBStatusBarNeedsUpdateNotification" object:nil];
                     });
                 }
             }
