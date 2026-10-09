@@ -16,7 +16,10 @@ jobs:
         run: brew install xcodegen
 
       - name: 生成Xcode工程
-        run: xcodegen generate
+        run: |
+          xcodegen generate
+          # 兼容Xcode15.4：将XcodeGen生成的objectVersion=77降级为56
+          sed -i '' 's/objectVersion = 77;/objectVersion = 56;/' GreenWiFiDemo.xcodeproj/project.pbxproj
 
       - name: 编译归档
         run: |
